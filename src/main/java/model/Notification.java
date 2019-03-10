@@ -2,18 +2,33 @@ package model;
 
 public class Notification {
 
-    private long received;
+    private long receivedTimestamp;
+    private long sentTimestamp;
     private String event;
 
-    public Notification(long received, String event) {
-        this.received = received;
+    public Notification(long receivedTimestamp, long sentTimestamp, String event) {
+        this.receivedTimestamp = receivedTimestamp;
+        this.sentTimestamp = sentTimestamp;
         this.event = event;
+    }
+
+    public long getReceivedTimestamp() {
+        return receivedTimestamp;
+    }
+
+    public long getSentTimestamp() {
+        return sentTimestamp;
+    }
+
+    public String getEvent() {
+        return event;
     }
 
     @Override
     public String toString() {
         return "Notification{" +
-                "received=" + received +
+                "received=" + receivedTimestamp +
+                ", sent=" + sentTimestamp +
                 ", event='" + event + '\'' +
                 '}';
     }

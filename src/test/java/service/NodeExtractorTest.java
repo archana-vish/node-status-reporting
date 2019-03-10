@@ -19,6 +19,7 @@ public class NodeExtractorTest {
     public void test_valid_lines() throws InvalidInputException, IOException {
         List<String> lines = this.inputFileReader.readFile(new String[]{"input.txt"});
         List<Notification> notificationList = nodeExtractor.createNotification(lines);
+        nodeExtractor.messWithNodes();
         assertEquals(lines.size(), notificationList.size());
     }
 
@@ -26,6 +27,7 @@ public class NodeExtractorTest {
     public void test_invalid_notification_lines() throws InvalidInputException, IOException {
         List<String> lines = this.inputFileReader.readFile(new String[]{"invalidNotification.txt"});
         List<Notification> notificationList = nodeExtractor.createNotification(lines);
+        nodeExtractor.messWithNodes();
         assertEquals(lines.size()-2, notificationList.size());
     }
 
