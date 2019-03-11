@@ -14,7 +14,7 @@ public class InputFileReader {
 
     private static Logger LOG = Logger.getLogger(InputFileReader.class.getName());
 
-    public List<String> readFile(String[] args) throws InvalidInputException, IOException {
+    public List<String> readFile(String[] args) throws InvalidInputException {
 
         String filename = "";
 
@@ -23,7 +23,6 @@ public class InputFileReader {
         } else {
             filename = args[0];
         }
-        System.out.println("Filename :: " + filename);
 
         List<String> lines = new ArrayList<>();
 
@@ -33,7 +32,6 @@ public class InputFileReader {
            lines= in.lines()
                     .filter(InputFileReader::validFormat)
                     .distinct()
-                    .peek(System.out::println)
                     .collect(Collectors.toList());
 
         } catch(IOException exception) {

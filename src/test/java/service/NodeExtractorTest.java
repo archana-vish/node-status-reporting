@@ -1,7 +1,6 @@
 package service;
 
 import exceptions.InvalidInputException;
-import exceptions.InvalidNotificationStatusException;
 import model.Notification;
 import org.junit.Test;
 
@@ -19,7 +18,8 @@ public class NodeExtractorTest {
     public void test_valid_lines() throws InvalidInputException, IOException {
         List<String> lines = this.inputFileReader.readFile(new String[]{"input.txt"});
         List<Notification> notificationList = nodeExtractor.createNotification(lines);
-        nodeExtractor.messWithNodes();
+        nodeExtractor.findUnknownAndPrintFinalReport();
+      //  nodeExtractor.getFinalReport();
         assertEquals(lines.size(), notificationList.size());
     }
 
@@ -27,8 +27,17 @@ public class NodeExtractorTest {
     public void test_invalid_notification_lines() throws InvalidInputException, IOException {
         List<String> lines = this.inputFileReader.readFile(new String[]{"invalidNotification.txt"});
         List<Notification> notificationList = nodeExtractor.createNotification(lines);
-        nodeExtractor.messWithNodes();
+        nodeExtractor.findUnknownAndPrintFinalReport();
         assertEquals(lines.size()-2, notificationList.size());
+    }
+
+    @Test
+    public void test_unknown_notification_lines() throws InvalidInputException, IOException {
+        List<String> lines = this.inputFileReader.readFile(new String[]{"unknownstatus.txt"});
+        List<Notification> notificationList = nodeExtractor.createNotification(lines);
+        nodeExtractor.findUnknownAndPrintFinalReport();
+       // nodeExtractor.getFinalReport();
+        assertEquals(lines.size(), notificationList.size());
     }
 
 }

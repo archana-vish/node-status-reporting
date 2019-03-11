@@ -2,6 +2,7 @@ package model;
 
 public class NodeStatusReport {
 
+    long id;
     String name;
     Node.STATUS status;
     long receivedTime;
@@ -33,7 +34,16 @@ public class NodeStatusReport {
         return message;
     }
 
-    public NodeStatusReport(String name, Node.STATUS status, long receivedTime, long emittedTime, long linkedNode, String message) {
+    public long getId() {
+        return id;
+    }
+
+    public void setStatus(Node.STATUS status) {
+        this.status = status;
+    }
+
+    public NodeStatusReport(long id, String name, Node.STATUS status, long receivedTime, long emittedTime, long linkedNode, String message) {
+        this.id = id;
         this.name = name;
         this.status = status;
         this.receivedTime = receivedTime;
@@ -44,6 +54,6 @@ public class NodeStatusReport {
 
     @Override
     public String toString() {
-        return name + " " + status + " " + receivedTime + " " + message;
+        return  name + " " + status + " " + receivedTime + " " + emittedTime + " " + message;
     }
 }

@@ -18,7 +18,7 @@ public class Main {
             List<String> lines = inputFileReader.readFile(args);
             List<Notification> notifications = nodeExtractor.createNotification(lines);
 
-        } catch(InvalidInputException | IOException exception) {
+        } catch(InvalidInputException exception) {
             exception.printStackTrace();
         }
     }

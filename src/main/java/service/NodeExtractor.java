@@ -1,6 +1,5 @@
 package service;
 
-import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeStatus;
 import model.Node;
 import model.NodeStatusReport;
 import model.Notification;
@@ -60,52 +59,75 @@ public class NodeExtractor implements  NodeExtractorRules {
                         prevNode.setLinkedNode(node.getId());
                         node.setLinkedNode(prevNode.getId());
 
-                        nodeStatusReportsList.add(createNodeStatusReport(prevNode.getName(), prevNode.getStatus(),
-                                notification.getReceivedTimestamp(), prevNode.getActiveTime(), prevNode.getLinkedNode(), notification.getEvent()));
-                        nodeStatusReportsList.add(createNodeStatusReport(node.getName(), node.getStatus(),
-                                notification.getReceivedTimestamp(), node.getActiveTime(), node.getLinkedNode(), notification.getEvent()));
-
+                        nodeStatusReportsList.add(createNodeStatusReport(prevNode, notification));
+                        nodeStatusReportsList.add(createNodeStatusReport(node, notification));
 
                         nodeList.add(prevNode);
                         nodeList.add(node);
                     } else {
-                        nodeStatusReportsList.add(createNodeStatusReport(node.getName(), node.getStatus(),
-                                notification.getReceivedTimestamp(), node.getActiveTime(), node.getLinkedNode(), notification.getEvent()));
+                        nodeStatusReportsList.add(createNodeStatusReport(node, notification));
                         nodeList.add(node);
                     }
                 }
             }
 
-
+            //TODO remove this comment
             // Create outputFile
-            LOG.info("Printing combined elements" + nodeStatusReportsList);
-
+//            Comparator<NodeStatusReport> compareByName = Comparator.comparing(NodeStatusReport::getName);
+//            Comparator<NodeStatusReport> compareByReceivedTime = Comparator.comparing(NodeStatusReport::getReceivedTime);
+//
+//            nodeStatusReportsList.stream()
+//                    .sorted(compareByName.thenComparing(compareByReceivedTime));
+                   // .forEach(System.out::println);
         } catch(Exception exception) {
             LOG.severe("Invalid notification status for line");
         }
-//        LOG.info("Notification list::"+ notificationList);
-//        LOG.info("Node list :: " + nodeList);
         return notificationList;
     }
 
-    public Notification createNotification(long receivedTime, long sentTime, String message) {
+    private Notification createNotification(long receivedTime, long sentTime, String message) {
         return new Notification(receivedTime, sentTime, message);
     }
 
-    public Node createNode(String nodeName, long emittedTime, Node.STATUS status) {
+    private Node createNode(String nodeName, long emittedTime, Node.STATUS status) {
         return new Node(nodeName, emittedTime, status);
     }
 
-    public NodeStatusReport createNodeStatusReport(String nodeName, Node.STATUS status, long receivedTime, long emittedTime, long linkedNode, String message) {
-        return new NodeStatusReport(nodeName, status, receivedTime, emittedTime, linkedNode, message);
+    private NodeStatusReport createNodeStatusReport(Node node, Notification notification) {
+        return new NodeStatusReport(node.getId(), node.getName(), node.getStatus(), notification.getReceivedTimestamp(), node.getActiveTime(), node.getLinkedNode(), notification.getEvent());
     }
 
-    public void messWithNodes() {
+    public void findUnknownAndPrintFinalReport() {
 
+        List<NodeStatusReport> nodeStatusReports = this.nodeStatusReportsList;
+        Map<Long, List<NodeStatusReport>> groupedByTime = nodeStatusReports.stream().collect(
+                groupingBy(NodeStatusReport::getEmittedTime)
+        );
 
-        Map<String, Optional<NodeStatusReport>> finalReport = nodeStatusReportsList.stream().collect(
+        List<List<NodeStatusReport>> incorrectOnes  = new ArrayList<>();
+        Iterator<Long> itr = groupedByTime.keySet().iterator();
+        while (itr.hasNext()) {
+            long time = itr.next();
+            if (groupedByTime.get(time).size() > 2) {
+                incorrectOnes.add(groupedByTime.get(time));
+            }
+        }
+
+        List<NodeStatusReport> allIncorrectList = incorrectOnes.stream().flatMap(List::stream).collect(Collectors.toList());
+
+        ListIterator<NodeStatusReport> itr2 = nodeStatusReports.listIterator();
+        while (itr2.hasNext()) {
+            NodeStatusReport report = itr2.next();
+            if (allIncorrectList.contains(report)) {
+                report.setStatus(Node.STATUS.UNKNOWN);
+                itr2.set(report);
+            }
+        }
+
+        Map<String, Optional<NodeStatusReport>> finalReport = nodeStatusReports.stream().collect(
                 groupingBy(NodeStatusReport::getName,
                         maxBy((Comparator.comparingLong(NodeStatusReport::getEmittedTime)))));
+
 
         List<NodeStatusReport> finalNodes = finalReport.values().stream()
                 .filter(Optional::isPresent)
@@ -113,7 +135,6 @@ public class NodeExtractor implements  NodeExtractorRules {
                 .collect(Collectors.toList());
 
         finalNodes.forEach(System.out::println);
-
 
     }
 }
