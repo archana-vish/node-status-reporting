@@ -12,7 +12,7 @@ public class Node {
 
     long id;
     String name;
-    long activeTime;
+    long emittedTime;
     STATUS status;
     long linkedNode;
 
@@ -20,8 +20,8 @@ public class Node {
         return name;
     }
 
-    public long getActiveTime() {
-        return activeTime;
+    public long getEmittedTime() {
+        return emittedTime;
     }
 
     public STATUS getStatus() {
@@ -40,10 +40,10 @@ public class Node {
         return id;
     }
 
-    public Node(String name, long activeTime, STATUS status) {
+    public Node(String name, long emittedTime, STATUS status) {
         this.id = counter++;
         this.name = name;
-        this.activeTime = activeTime;
+        this.emittedTime = emittedTime;
         this.status = status;
     }
 
@@ -52,7 +52,7 @@ public class Node {
         return "Node{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", activeTime=" + activeTime +
+                ", emittedTime=" + emittedTime +
                 ", status=" + status +
                 ", linkedNode=" + linkedNode +
                 '}';

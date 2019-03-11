@@ -19,7 +19,7 @@ public class NodeExtractor implements  NodeExtractorRules {
     List<Node> nodeList;
     List<NodeStatusReport> nodeStatusReportsList;
 
-    public List<Notification> createNotification(List<String> lines) {
+    private List<Notification> createNotification(List<String> lines) {
         ListIterator<String> itr = lines.listIterator();
 
         notificationList = new ArrayList<>();
@@ -28,33 +28,27 @@ public class NodeExtractor implements  NodeExtractorRules {
 
         Notification notification;
         Node node;
-
+        Node prevNode;
         String line;
 
         try {
-
             while (itr.hasNext()) {
                 line = itr.next();
-                String[] elements = line.split("\\s");
-                if (!validNotifications.contains(elements[NOTIFICATION_TYPE])) {
+                String[] data = line.split("\\s");
+                if (!validNotifications.contains(data[NOTIFICATION_TYPE])) {
                     LOG.severe("Invalid notification status for line :: " + line);
                 } else {
-                    notification = createNotification(Long.parseLong(elements[RECEIVED_TIME]),
-                            Long.parseLong(elements[SENT_FROM_NODE_TIME]),
-                            String.join(" ", Arrays.asList(elements).subList(NodeExtractor.NODE_NAME, elements.length)));
+                    notification = createNotification(data);
                     notificationList.add(notification);
 
                     // Create nodes
-                    node = createNode(elements[NODE_NAME], Long.parseLong(elements[SENT_FROM_NODE_TIME]),Node.STATUS.ALIVE);
+                    node = createNode(data, false);
 
+                    if (!data[NOTIFICATION_TYPE].equals("HELLO")) {
 
-                    if (!elements[NOTIFICATION_TYPE].equals("HELLO")) {
+                        prevNode = node;
 
-                        Node prevNode = node;
-
-                        node = createNode(elements[OBSERVED_NODE],
-                                Long.parseLong(elements[SENT_FROM_NODE_TIME]),
-                                elements[NodeExtractor.NOTIFICATION_TYPE].equals("LOST") ? Node.STATUS.DEAD : Node.STATUS.ALIVE);
+                        node = createNode(data, true);
 
                         prevNode.setLinkedNode(node.getId());
                         node.setLinkedNode(prevNode.getId());
@@ -70,34 +64,39 @@ public class NodeExtractor implements  NodeExtractorRules {
                     }
                 }
             }
-
-            //TODO remove this comment
-            // Create outputFile
-//            Comparator<NodeStatusReport> compareByName = Comparator.comparing(NodeStatusReport::getName);
-//            Comparator<NodeStatusReport> compareByReceivedTime = Comparator.comparing(NodeStatusReport::getReceivedTime);
-//
-//            nodeStatusReportsList.stream()
-//                    .sorted(compareByName.thenComparing(compareByReceivedTime));
-                   // .forEach(System.out::println);
         } catch(Exception exception) {
             LOG.severe("Invalid notification status for line");
         }
         return notificationList;
     }
 
-    private Notification createNotification(long receivedTime, long sentTime, String message) {
-        return new Notification(receivedTime, sentTime, message);
+    private Notification createNotification(String[] line) {
+       return new Notification (
+                Long.parseLong(line[RECEIVED_TIME]),
+                Long.parseLong(line[SENT_FROM_NODE_TIME]),
+                String.join(" ", Arrays.asList(line).subList(NodeExtractor.NODE_NAME, line.length)));
     }
 
-    private Node createNode(String nodeName, long emittedTime, Node.STATUS status) {
-        return new Node(nodeName, emittedTime, status);
+    private Node createNode(String[] data, boolean observedNode) {
+        return new Node(
+                observedNode? data[OBSERVED_NODE] :  data[NODE_NAME] ,
+                Long.parseLong(data[SENT_FROM_NODE_TIME]),
+                observedNode
+                        ? data[NodeExtractor.NOTIFICATION_TYPE].equals("LOST") ? Node.STATUS.DEAD : Node.STATUS.ALIVE
+                        :  Node.STATUS.ALIVE
+        );
     }
 
     private NodeStatusReport createNodeStatusReport(Node node, Notification notification) {
-        return new NodeStatusReport(node.getId(), node.getName(), node.getStatus(), notification.getReceivedTimestamp(), node.getActiveTime(), node.getLinkedNode(), notification.getEvent());
+        return new NodeStatusReport(node.getId(), node.getName(), node.getStatus(), notification.getReceivedTimestamp(), node.getEmittedTime(), node.getLinkedNode(), notification.getEvent());
     }
 
-    public void findUnknownAndPrintFinalReport() {
+    public List<NodeStatusReport>  printFinalReport(List<String> lines) {
+        createNotification(lines);
+        return printFinalReport();
+    }
+
+    private List<NodeStatusReport> printFinalReport() {
 
         List<NodeStatusReport> nodeStatusReports = this.nodeStatusReportsList;
         Map<Long, List<NodeStatusReport>> groupedByTime = nodeStatusReports.stream().collect(
@@ -105,9 +104,7 @@ public class NodeExtractor implements  NodeExtractorRules {
         );
 
         List<List<NodeStatusReport>> incorrectOnes  = new ArrayList<>();
-        Iterator<Long> itr = groupedByTime.keySet().iterator();
-        while (itr.hasNext()) {
-            long time = itr.next();
+        for (Long time : groupedByTime.keySet()) {
             if (groupedByTime.get(time).size() > 2) {
                 incorrectOnes.add(groupedByTime.get(time));
             }
@@ -135,6 +132,8 @@ public class NodeExtractor implements  NodeExtractorRules {
                 .collect(Collectors.toList());
 
         finalNodes.forEach(System.out::println);
+
+        return finalNodes;
 
     }
 }
