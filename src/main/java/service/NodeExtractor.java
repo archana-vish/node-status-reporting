@@ -19,6 +19,22 @@ public class NodeExtractor implements  NodeExtractorRules {
     List<Node> nodeList;
     List<NodeStatusReport> nodeStatusReportsList;
 
+    /**
+     * Print the final report in the required format
+     * @param lines the lines read from the file
+     * @return List of the final report printed
+     */
+    public List<NodeStatusReport>  printFinalReport(List<String> lines) {
+        createNotification(lines);
+        return printFinalReport();
+    }
+
+
+    /**
+     * Create the list of notifications received
+     * @param lines for all the valid lines read from the file
+     * @return List of Notifications
+     */
     private List<Notification> createNotification(List<String> lines) {
         ListIterator<String> itr = lines.listIterator();
 
@@ -70,6 +86,11 @@ public class NodeExtractor implements  NodeExtractorRules {
         return notificationList;
     }
 
+    /**
+     * Method to create the notification
+     * @param line the given input line
+     * @return Notification object
+     */
     private Notification createNotification(String[] line) {
        return new Notification (
                 Long.parseLong(line[RECEIVED_TIME]),
@@ -77,6 +98,12 @@ public class NodeExtractor implements  NodeExtractorRules {
                 String.join(" ", Arrays.asList(line).subList(NodeExtractor.NODE_NAME, line.length)));
     }
 
+    /**
+     * Create a node
+     * @param data the line split by space
+     * @param observedNode true/false if handling the current node or the observed node
+     * @return Node
+     */
     private Node createNode(String[] data, boolean observedNode) {
         return new Node(
                 observedNode? data[OBSERVED_NODE] :  data[NODE_NAME] ,
@@ -87,15 +114,22 @@ public class NodeExtractor implements  NodeExtractorRules {
         );
     }
 
+    /**
+     * Method to create the NodeStatusReport
+     * @param node current node
+     * @param notification notification
+     * @return NodeStatusReport
+     */
     private NodeStatusReport createNodeStatusReport(Node node, Notification notification) {
         return new NodeStatusReport(node.getId(), node.getName(), node.getStatus(), notification.getReceivedTimestamp(), node.getEmittedTime(), node.getLinkedNode(), notification.getEvent());
     }
 
-    public List<NodeStatusReport>  printFinalReport(List<String> lines) {
-        createNotification(lines);
-        return printFinalReport();
-    }
 
+
+    /**
+     * Method to test for UNKNOWN status and print the report
+     * @return List of NodeStatusReport
+     */
     private List<NodeStatusReport> printFinalReport() {
 
         List<NodeStatusReport> nodeStatusReports = this.nodeStatusReportsList;

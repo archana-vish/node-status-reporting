@@ -14,6 +14,12 @@ public class InputFileReader {
 
     private static Logger LOG = Logger.getLogger(InputFileReader.class.getName());
 
+    /**
+     * Method to read an input file and get the list of lines in the file
+     * @param args the input file name
+     * @return List<String> of lines
+     * @throws InvalidInputException
+     */
     public List<String> readFile(String[] args) throws InvalidInputException {
 
         String filename;
@@ -43,6 +49,11 @@ public class InputFileReader {
         return lines;
     }
 
+    /**
+     * Check valid input format
+     * @param line the input line
+     * @return
+     */
     private static boolean validFormat(String line) {
         return (line.matches("([0-9]+)\\s([0-9]+)\\s([a-z0-9]+)\\s([A-Z]+)(\\s)?([A-Z]*)\\s([a-z0-9]*)") ||
         line.matches("([0-9]+)\\s([0-9]+)\\s([a-z0-9]+)\\s([A-Z]+)"));

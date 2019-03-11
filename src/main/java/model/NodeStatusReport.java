@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * Model to hold NodeStatusReport
+ */
 public class NodeStatusReport {
 
     long id;

@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * Model for Notification
+ */
 public class Notification {
 
     private long receivedTimestamp;

@@ -1,5 +1,9 @@
 package model;
 
+/**
+ * Model to hold Node details
+ */
+
 public class Node {
 
     static long counter = 1;
